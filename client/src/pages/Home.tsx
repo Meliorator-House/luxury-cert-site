@@ -1,53 +1,87 @@
-import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { Share2 } from "lucide-react";
+import { Share2, Gift } from "lucide-react";
 
 /**
- * Luxury Certificate Landing Page
- * Design: Modern Luxury with Glassmorphism
+ * Luxury Certificate Landing Page - Mobile Optimized
+ * Design: Modern Luxury with Glassmorphism + iOS Animations
  * 
- * Color Palette:
- * - Background: Deep Charcoal (#0f0f0f)
- * - Accent: Warm Gold (#d4af37)
- * - Text: Cream (#f5f1e8)
- * 
- * Typography:
- * - Display: Playfair Display (serif) - elegant, bold
- * - Body: Montserrat (sans-serif) - clean, modern
+ * Features:
+ * - 2-second intro animation with loading text
+ * - iOS-style emoji confetti (🎁🎉✨💝🎊)
+ * - Transparent glowing icons
+ * - Mobile-optimized layout (no scroll overflow)
+ * - Premium animations and interactions
  */
 
-interface Confetti {
+interface EmojiConfetti {
   id: string;
+  emoji: string;
   left: number;
   delay: number;
   duration: number;
   size: number;
+  rotation: number;
+}
+
+interface GlowingIcon {
+  id: string;
+  icon: string;
+  x: number;
+  y: number;
+  delay: number;
 }
 
 export default function Home() {
-  const [confetti, setConfetti] = useState<Confetti[]>([]);
+  const [showIntro, setShowIntro] = useState(true);
+  const [emojiConfetti, setEmojiConfetti] = useState<EmojiConfetti[]>([]);
   const [isActivated, setIsActivated] = useState(false);
+  const [glowingIcons, setGlowingIcons] = useState<GlowingIcon[]>([]);
 
-  // Generate confetti particles on mount
+  // Intro animation - 2 seconds
   useEffect(() => {
-    const particles: Confetti[] = Array.from({ length: 50 }, (_, i) => ({
-      id: `confetti-${i}`,
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+      // Trigger emoji confetti after intro
+      generateEmojiConfetti();
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Generate iOS-style emoji confetti
+  const generateEmojiConfetti = () => {
+    const emojis = ["🎁", "🎉", "✨", "💝", "🎊", "🎈", "⭐", "💫"];
+    const particles: EmojiConfetti[] = Array.from({ length: 40 }, (_, i) => ({
+      id: `emoji-${i}`,
+      emoji: emojis[Math.floor(Math.random() * emojis.length)],
       left: Math.random() * 100,
-      delay: Math.random() * 0.3,
-      duration: 2 + Math.random() * 1,
-      size: 4 + Math.random() * 12,
+      delay: Math.random() * 0.5,
+      duration: 2.5 + Math.random() * 1.5,
+      size: 24 + Math.random() * 32,
+      rotation: Math.random() * 360,
     }));
-    setConfetti(particles);
+    setEmojiConfetti(particles);
+  };
+
+  // Generate glowing icons for background
+  useEffect(() => {
+    const icons: GlowingIcon[] = Array.from({ length: 8 }, (_, i) => ({
+      id: `glow-${i}`,
+      icon: ["🎁", "✨", "💎", "🌟"][Math.floor(Math.random() * 4)],
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 2,
+    }));
+    setGlowingIcons(icons);
   }, []);
 
   const handleActivate = () => {
     setIsActivated(true);
-    // Reset after animation
+    generateEmojiConfetti();
     setTimeout(() => setIsActivated(false), 2500);
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center overflow-hidden relative">
+    <div className="w-screen h-screen overflow-hidden fixed inset-0 flex items-center justify-center">
       {/* Background with gradient and pattern */}
       <div 
         className="absolute inset-0 -z-10"
@@ -61,7 +95,7 @@ export default function Home() {
 
       {/* Animated pattern overlay */}
       <div 
-        className="absolute inset-0 -z-10 opacity-30 animate-pulse"
+        className="absolute inset-0 -z-10 opacity-20"
         style={{
           backgroundImage: `url('https://d2xsxph8kpxj0f.cloudfront.net/310519663513334830/Zd4fQswhgtYQ8xXhTb4EZz/abstract-luxury-pattern-oPCJkyoEa7zdUiZjd9ehD7.webp')`,
           backgroundSize: '400px 400px',
@@ -70,67 +104,158 @@ export default function Home() {
         }}
       />
 
-      {/* Confetti particles */}
-      {isActivated && confetti.map((particle) => (
+      {/* Glowing background icons */}
+      <div className="absolute inset-0 -z-5 overflow-hidden">
+        {glowingIcons.map((icon) => (
+          <div
+            key={icon.id}
+            className="absolute text-4xl opacity-10 pointer-events-none"
+            style={{
+              left: `${icon.x}%`,
+              top: `${icon.y}%`,
+              animation: `float-icon 8s ease-in-out infinite`,
+              animationDelay: `${icon.delay}s`,
+              filter: 'blur(1px)',
+            }}
+          >
+            {icon.icon}
+          </div>
+        ))}
+      </div>
+
+      {/* Intro Screen */}
+      {showIntro && (
+        <div 
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center"
+          style={{
+            background: 'rgba(15, 15, 15, 0.95)',
+            backdropFilter: 'blur(10px)',
+            animation: 'fadeOut 0.5s ease-out 1.5s forwards',
+          }}
+        >
+          <div className="flex flex-col items-center gap-6">
+            {/* Animated gift icon */}
+            <div
+              style={{
+                animation: 'pulse-scale 1.5s ease-in-out infinite',
+              }}
+            >
+              <Gift size={80} color="#d4af37" strokeWidth={1.5} />
+            </div>
+            
+            {/* Loading text */}
+            <div className="text-center">
+              <p 
+                className="text-2xl font-display tracking-widest mb-4"
+                style={{
+                  color: '#d4af37',
+                  textShadow: '0 0 20px rgba(212, 175, 55, 0.5)',
+                  animation: 'fadeInOut 2s ease-in-out',
+                }}
+              >
+                Ваш сертификат
+              </p>
+              <p 
+                className="text-lg font-body tracking-widest"
+                style={{
+                  color: '#f5f1e8',
+                  opacity: 0.8,
+                  animation: 'fadeInOut 2s ease-in-out 0.3s',
+                }}
+              >
+                загружается...
+              </p>
+            </div>
+
+            {/* Animated loading dots */}
+            <div className="flex gap-2 mt-6">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    backgroundColor: '#d4af37',
+                    boxShadow: '0 0 10px rgba(212, 175, 55, 0.8)',
+                    animation: `bounce 1.4s ease-in-out infinite`,
+                    animationDelay: `${i * 0.2}s`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Emoji Confetti - iOS Style */}
+      {emojiConfetti.map((particle) => (
         <div
           key={particle.id}
-          className="absolute pointer-events-none"
+          className="fixed pointer-events-none font-display"
           style={{
             left: `${particle.left}%`,
-            top: '-10px',
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
+            top: '-50px',
+            fontSize: `${particle.size}px`,
             opacity: 0,
-            animation: `fall ${particle.duration}s linear ${particle.delay}s forwards`,
-            backgroundColor: ['#d4af37', '#f5f1e8', '#b76e79'][Math.floor(Math.random() * 3)],
-            borderRadius: Math.random() > 0.5 ? '50%' : '4px',
+            animation: `fall-emoji ${particle.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${particle.delay}s forwards`,
+            transform: `rotate(${particle.rotation}deg)`,
+            textShadow: '0 0 10px rgba(212, 175, 55, 0.3)',
           }}
-        />
+        >
+          {particle.emoji}
+        </div>
       ))}
 
-      {/* Main content container */}
-      <div className="relative z-10 w-full max-w-2xl px-4 py-12">
+      {/* Main content container - Mobile optimized */}
+      <div className="relative z-10 w-full h-full max-w-md flex flex-col items-center justify-center px-4 py-8 overflow-hidden">
         {/* Certificate Card with Glassmorphism */}
         <div
-          className="glass-strong rounded-2xl p-12 mb-8 border border-white/20 shadow-2xl"
+          className="glass-strong rounded-3xl p-8 mb-6 border border-white/20 shadow-2xl w-full"
           style={{
             animation: 'float 4s ease-in-out infinite',
             backdropFilter: 'blur(10px)',
-            background: 'rgba(20, 20, 30, 0.6)',
+            background: 'rgba(20, 20, 30, 0.7)',
+            maxHeight: '50vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}
         >
-          {/* Decorative top element */}
-          <div className="flex justify-center mb-8">
-            <div className="flex gap-2">
-              {[...Array(3)].map((_, i) => (
+          {/* Decorative top element with glowing icons */}
+          <div className="flex justify-center mb-6">
+            <div className="flex gap-3">
+              {["🎁", "✨", "💎"].map((emoji, i) => (
                 <div
                   key={i}
-                  className="w-1 h-1 rounded-full"
+                  className="text-2xl"
                   style={{
-                    backgroundColor: '#d4af37',
-                    boxShadow: '0 0 10px rgba(212, 175, 55, 0.6)',
+                    opacity: 0.7,
+                    filter: 'drop-shadow(0 0 8px rgba(212, 175, 55, 0.6))',
+                    animation: `float-emoji 3s ease-in-out infinite`,
+                    animationDelay: `${i * 0.3}s`,
                   }}
-                />
+                >
+                  {emoji}
+                </div>
               ))}
             </div>
           </div>
 
           {/* Certificate Title */}
           <h1 
-            className="font-display text-4xl md:text-5xl text-center mb-2"
+            className="font-display text-3xl sm:text-4xl text-center mb-1"
             style={{
               color: '#d4af37',
-              textShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
+              textShadow: '0 0 20px rgba(212, 175, 55, 0.4)',
               letterSpacing: '0.1em',
             }}
           >
             ВАМ ДОСТУПЕН
           </h1>
           <h2 
-            className="font-display text-5xl md:text-6xl text-center mb-8"
+            className="font-display text-4xl sm:text-5xl text-center mb-6"
             style={{
               color: '#d4af37',
-              textShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
+              textShadow: '0 0 20px rgba(212, 175, 55, 0.4)',
               letterSpacing: '0.15em',
             }}
           >
@@ -138,18 +263,18 @@ export default function Home() {
           </h2>
 
           {/* Divider line */}
-          <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-yellow-600 to-transparent mx-auto mb-8" />
+          <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-yellow-600 to-transparent mx-auto mb-6" />
 
           {/* Amount section */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-6">
             <p 
-              className="font-body text-sm tracking-widest mb-3"
+              className="font-body text-xs sm:text-sm tracking-widest mb-2"
               style={{ color: '#f5f1e8', opacity: 0.8 }}
             >
               НА СУММУ:
             </p>
             <p 
-              className="font-display text-6xl md:text-7xl"
+              className="font-display text-5xl sm:text-6xl"
               style={{
                 color: '#d4af37',
                 textShadow: '0 0 30px rgba(212, 175, 55, 0.4)',
@@ -161,95 +286,106 @@ export default function Home() {
 
           {/* Decorative bottom element */}
           <div className="flex justify-center">
-            <div className="flex gap-2">
-              {[...Array(3)].map((_, i) => (
+            <div className="flex gap-3">
+              {["🎉", "💝", "🎊"].map((emoji, i) => (
                 <div
                   key={i}
-                  className="w-1 h-1 rounded-full"
+                  className="text-2xl"
                   style={{
-                    backgroundColor: '#d4af37',
-                    boxShadow: '0 0 10px rgba(212, 175, 55, 0.6)',
+                    opacity: 0.7,
+                    filter: 'drop-shadow(0 0 8px rgba(212, 175, 55, 0.6))',
+                    animation: `float-emoji 3s ease-in-out infinite`,
+                    animationDelay: `${i * 0.3 + 1.5}s`,
                   }}
-                />
+                >
+                  {emoji}
+                </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-4 w-full">
+        {/* Action Buttons - Mobile optimized */}
+        <div className="flex flex-col gap-3 w-full">
+          {/* Primary Button */}
           <button
             onClick={handleActivate}
-            className="w-full py-6 px-6 text-lg font-semibold font-body tracking-wider rounded-lg"
+            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl transition-all duration-300 active:scale-95"
             style={{
-              backgroundColor: '#d4af37',
+              background: 'linear-gradient(135deg, #d4af37 0%, #e8d5c4 100%)',
               color: '#0f0f0f',
               border: '2px solid #d4af37',
-              boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 24px rgba(212, 175, 55, 0.3), 0 0 20px rgba(212, 175, 55, 0.2)',
               cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
             }}
             onMouseEnter={(e) => {
               const target = e.currentTarget as HTMLElement;
-              target.style.boxShadow = '0 0 40px rgba(212, 175, 55, 0.6)';
-              target.style.transform = 'scale(1.02)';
+              target.style.boxShadow = '0 12px 32px rgba(212, 175, 55, 0.5), 0 0 40px rgba(212, 175, 55, 0.3)';
+              target.style.transform = 'scale(1.02) translateY(-2px)';
             }}
             onMouseLeave={(e) => {
               const target = e.currentTarget as HTMLElement;
-              target.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.3)';
-              target.style.transform = 'scale(1)';
+              target.style.boxShadow = '0 8px 24px rgba(212, 175, 55, 0.3), 0 0 20px rgba(212, 175, 55, 0.2)';
+              target.style.transform = 'scale(1) translateY(0)';
             }}
           >
-            АКТИВИРОВАТЬ
+            🎁 АКТИВИРОВАТЬ
           </button>
 
+          {/* Secondary Button */}
           <button
-            className="w-full py-6 px-6 text-lg font-semibold font-body tracking-wider rounded-lg"
+            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl transition-all duration-300 active:scale-95 backdrop-blur-md"
             style={{
-              backgroundColor: 'transparent',
+              backgroundColor: 'rgba(212, 175, 55, 0.08)',
               color: '#d4af37',
-              border: '2px dashed #d4af37',
-              boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              border: '2px solid rgba(212, 175, 55, 0.4)',
+              boxShadow: '0 4px 16px rgba(212, 175, 55, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
             }}
             onMouseEnter={(e) => {
               const target = e.currentTarget as HTMLElement;
-              target.style.boxShadow = '0 0 30px rgba(212, 175, 55, 0.4)';
-              target.style.backgroundColor = 'rgba(212, 175, 55, 0.1)';
+              target.style.boxShadow = '0 8px 24px rgba(212, 175, 55, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1)';
+              target.style.backgroundColor = 'rgba(212, 175, 55, 0.15)';
+              target.style.transform = 'scale(1.02) translateY(-2px)';
             }}
             onMouseLeave={(e) => {
               const target = e.currentTarget as HTMLElement;
-              target.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.2)';
-              target.style.backgroundColor = 'transparent';
+              target.style.boxShadow = '0 4px 16px rgba(212, 175, 55, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.1)';
+              target.style.backgroundColor = 'rgba(212, 175, 55, 0.08)';
+              target.style.transform = 'scale(1) translateY(0)';
             }}
           >
-            ПЕРЕЙТИ НА САЙТ
+            🌐 ПЕРЕЙТИ НА САЙТ
           </button>
 
+          {/* Share Button */}
           <button
-            className="w-full py-6 px-6 text-lg font-semibold font-body tracking-wider rounded-lg flex items-center justify-center gap-2"
+            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 backdrop-blur-md"
             style={{
-              backgroundColor: 'transparent',
+              backgroundColor: 'rgba(45, 155, 109, 0.08)',
               color: '#2d9b6d',
-              border: '2px dashed #2d9b6d',
-              boxShadow: '0 0 15px rgba(45, 155, 109, 0.2)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              border: '2px solid rgba(45, 155, 109, 0.4)',
+              boxShadow: '0 4px 16px rgba(45, 155, 109, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
             }}
             onMouseEnter={(e) => {
               const target = e.currentTarget as HTMLElement;
-              target.style.boxShadow = '0 0 30px rgba(45, 155, 109, 0.4)';
-              target.style.backgroundColor = 'rgba(45, 155, 109, 0.1)';
+              target.style.boxShadow = '0 8px 24px rgba(45, 155, 109, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1)';
+              target.style.backgroundColor = 'rgba(45, 155, 109, 0.15)';
+              target.style.transform = 'scale(1.02) translateY(-2px)';
             }}
             onMouseLeave={(e) => {
               const target = e.currentTarget as HTMLElement;
-              target.style.boxShadow = '0 0 15px rgba(45, 155, 109, 0.2)';
-              target.style.backgroundColor = 'transparent';
+              target.style.boxShadow = '0 4px 16px rgba(45, 155, 109, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.1)';
+              target.style.backgroundColor = 'rgba(45, 155, 109, 0.08)';
+              target.style.transform = 'scale(1) translateY(0)';
             }}
           >
-            <Share2 size={20} />
-            ПОДЕЛИТЬСЯ СЕРТИФИКАТОМ
+            <Share2 size={18} style={{ filter: 'drop-shadow(0 0 8px rgba(45, 155, 109, 0.7))' }} />
+            ПОДЕЛИТЬСЯ
           </button>
         </div>
       </div>
@@ -261,11 +397,29 @@ export default function Home() {
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-20px);
+            transform: translateY(-15px);
           }
         }
 
-        @keyframes fall {
+        @keyframes float-icon {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(10deg);
+          }
+        }
+
+        @keyframes float-emoji {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-10px) rotate(5deg);
+          }
+        }
+
+        @keyframes fall-emoji {
           0% {
             transform: translateY(0) rotate(0deg);
             opacity: 1;
@@ -276,13 +430,100 @@ export default function Home() {
           }
         }
 
-        /* Smooth transitions */
+        @keyframes pulse-scale {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.8;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
+        @keyframes fadeInOut {
+          0% {
+            opacity: 0;
+          }
+          20% {
+            opacity: 1;
+          }
+          80% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes fadeOut {
+          0% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            pointer-events: none;
+          }
+        }
+
+        /* Prevent scroll */
+        * {
+          -webkit-user-select: none;
+          user-select: none;
+        }
+
+        body, html {
+          overflow: hidden !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+        }
+
         button {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          -webkit-tap-highlight-color: transparent;
+          -webkit-appearance: none;
+          appearance: none;
         }
 
         button:active {
-          transform: scale(0.98);
+          transform: scale(0.95) !important;
+        }
+
+        button:focus {
+          outline: none;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+          body {
+            font-size: 14px;
+          }
+
+          button {
+            padding: 16px 20px !important;
+            font-size: 15px !important;
+            border-radius: 16px !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          body {
+            touch-action: manipulation;
+          }
         }
       `}</style>
     </div>
