@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Share2, Gift } from "lucide-react";
+import { useLocation } from "wouter";
 
 /**
  * Luxury Certificate Landing Page - Mobile Optimized
@@ -8,9 +9,10 @@ import { Share2, Gift } from "lucide-react";
  * Features:
  * - 2-second intro animation with loading text
  * - iOS-style emoji confetti (🎁🎉✨💝🎊)
- * - Transparent glowing icons
- * - Mobile-optimized layout (no scroll overflow)
- * - Premium animations and interactions
+ * - Transparent glowing icons with shimmer effects
+ * - Working links and share functionality
+ * - Dynamic certificate amounts (1000₽, 2000₽, 3000₽, 4000₽, 5000₽)
+ * - Separate URLs for each amount
  */
 
 interface EmojiConfetti {
@@ -31,11 +33,31 @@ interface GlowingIcon {
   delay: number;
 }
 
+const CERTIFICATE_AMOUNTS = {
+  "1000": { amount: "1000₽", path: "/cert/1000" },
+  "2000": { amount: "2000₽", path: "/cert/2000" },
+  "3000": { amount: "3000₽", path: "/cert/3000" },
+  "4000": { amount: "4000₽", path: "/cert/4000" },
+  "5000": { amount: "5000₽", path: "/cert/5000" },
+};
+
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
   const [emojiConfetti, setEmojiConfetti] = useState<EmojiConfetti[]>([]);
   const [isActivated, setIsActivated] = useState(false);
   const [glowingIcons, setGlowingIcons] = useState<GlowingIcon[]>([]);
+  const [location] = useLocation();
+  const [certificateAmount, setCertificateAmount] = useState("2000₽");
+
+  // Detect certificate amount from URL
+  useEffect(() => {
+    const pathSegments = location.split("/");
+    const amount = pathSegments[pathSegments.length - 1];
+    
+    if (amount in CERTIFICATE_AMOUNTS) {
+      setCertificateAmount(CERTIFICATE_AMOUNTS[amount as keyof typeof CERTIFICATE_AMOUNTS].amount);
+    }
+  }, [location]);
 
   // Intro animation - 2 seconds
   useEffect(() => {
@@ -75,6 +97,42 @@ export default function Home() {
   }, []);
 
   const handleActivate = () => {
+    // Open Telegram link
+    window.open("https://t.me/meliorator_House163", "_blank");
+    setIsActivated(true);
+    generateEmojiConfetti();
+    setTimeout(() => setIsActivated(false), 2500);
+  };
+
+  const handleGoToSite = () => {
+    // Open website
+    window.open("https://meliorator-house.ru", "_blank");
+  };
+
+  const handleShare = async () => {
+    const shareText = `Я получил сертификат на сумму ${certificateAmount} от Мелиоратор Хаус! 🎁`;
+    const shareUrl = window.location.href;
+
+    // Try native share API first
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Мелиоратор Хаус - Сертификат",
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.log("Share cancelled or failed");
+      }
+    } else {
+      // Fallback: copy to clipboard
+      const text = `${shareText}\n${shareUrl}`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Контакты скопированы в буфер обмена!");
+      });
+    }
+
+    // Trigger confetti
     setIsActivated(true);
     generateEmojiConfetti();
     setTimeout(() => setIsActivated(false), 2500);
@@ -101,6 +159,15 @@ export default function Home() {
           backgroundSize: '400px 400px',
           backgroundPosition: 'center',
           animation: 'float 20s ease-in-out infinite',
+        }}
+      />
+
+      {/* Shimmer overlay effect */}
+      <div 
+        className="absolute inset-0 -z-9 pointer-events-none"
+        style={{
+          background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent)',
+          animation: 'shimmer 3s ease-in-out infinite',
         }}
       />
 
@@ -207,9 +274,9 @@ export default function Home() {
 
       {/* Main content container - Mobile optimized */}
       <div className="relative z-10 w-full h-full max-w-md flex flex-col items-center justify-center px-4 py-8 overflow-hidden">
-        {/* Certificate Card with Glassmorphism */}
+        {/* Certificate Card with Glassmorphism and Shimmer */}
         <div
-          className="glass-strong rounded-3xl p-8 mb-6 border border-white/20 shadow-2xl w-full"
+          className="glass-strong rounded-3xl p-8 mb-6 border border-white/20 shadow-2xl w-full relative overflow-hidden"
           style={{
             animation: 'float 4s ease-in-out infinite',
             backdropFilter: 'blur(10px)',
@@ -220,8 +287,17 @@ export default function Home() {
             justifyContent: 'center',
           }}
         >
+          {/* Shimmer effect on card */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent)',
+              animation: 'shimmer 3s ease-in-out infinite',
+            }}
+          />
+
           {/* Decorative top element with glowing icons */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 relative z-10">
             <div className="flex gap-3">
               {["🎁", "✨", "💎"].map((emoji, i) => (
                 <div
@@ -229,7 +305,7 @@ export default function Home() {
                   className="text-2xl"
                   style={{
                     opacity: 0.7,
-                    filter: 'drop-shadow(0 0 8px rgba(212, 175, 55, 0.6))',
+                    filter: 'drop-shadow(0 0 12px rgba(212, 175, 55, 0.8))',
                     animation: `float-emoji 3s ease-in-out infinite`,
                     animationDelay: `${i * 0.3}s`,
                   }}
@@ -242,7 +318,7 @@ export default function Home() {
 
           {/* Certificate Title */}
           <h1 
-            className="font-display text-3xl sm:text-4xl text-center mb-1"
+            className="font-display text-3xl sm:text-4xl text-center mb-1 relative z-10"
             style={{
               color: '#d4af37',
               textShadow: '0 0 20px rgba(212, 175, 55, 0.4)',
@@ -252,7 +328,7 @@ export default function Home() {
             ВАМ ДОСТУПЕН
           </h1>
           <h2 
-            className="font-display text-4xl sm:text-5xl text-center mb-6"
+            className="font-display text-4xl sm:text-5xl text-center mb-6 relative z-10"
             style={{
               color: '#d4af37',
               textShadow: '0 0 20px rgba(212, 175, 55, 0.4)',
@@ -263,10 +339,10 @@ export default function Home() {
           </h2>
 
           {/* Divider line */}
-          <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-yellow-600 to-transparent mx-auto mb-6" />
+          <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-yellow-600 to-transparent mx-auto mb-6 relative z-10" />
 
           {/* Amount section */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-6 relative z-10">
             <p 
               className="font-body text-xs sm:text-sm tracking-widest mb-2"
               style={{ color: '#f5f1e8', opacity: 0.8 }}
@@ -278,14 +354,15 @@ export default function Home() {
               style={{
                 color: '#d4af37',
                 textShadow: '0 0 30px rgba(212, 175, 55, 0.4)',
+                animation: 'glow-pulse 2s ease-in-out infinite',
               }}
             >
-              2000₽
+              {certificateAmount}
             </p>
           </div>
 
           {/* Decorative bottom element */}
-          <div className="flex justify-center">
+          <div className="flex justify-center relative z-10">
             <div className="flex gap-3">
               {["🎉", "💝", "🎊"].map((emoji, i) => (
                 <div
@@ -293,7 +370,7 @@ export default function Home() {
                   className="text-2xl"
                   style={{
                     opacity: 0.7,
-                    filter: 'drop-shadow(0 0 8px rgba(212, 175, 55, 0.6))',
+                    filter: 'drop-shadow(0 0 12px rgba(212, 175, 55, 0.8))',
                     animation: `float-emoji 3s ease-in-out infinite`,
                     animationDelay: `${i * 0.3 + 1.5}s`,
                   }}
@@ -307,10 +384,10 @@ export default function Home() {
 
         {/* Action Buttons - Mobile optimized */}
         <div className="flex flex-col gap-3 w-full">
-          {/* Primary Button */}
+          {/* Primary Button - Activate */}
           <button
             onClick={handleActivate}
-            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl transition-all duration-300 active:scale-95"
+            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl transition-all duration-300 active:scale-95 relative overflow-hidden group"
             style={{
               background: 'linear-gradient(135deg, #d4af37 0%, #e8d5c4 100%)',
               color: '#0f0f0f',
@@ -330,12 +407,22 @@ export default function Home() {
               target.style.transform = 'scale(1) translateY(0)';
             }}
           >
-            🎁 АКТИВИРОВАТЬ
+            <span style={{ position: 'relative', zIndex: 2 }}>
+              🎁 АКТИВИРОВАТЬ
+            </span>
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+                animation: 'shimmer 2s ease-in-out infinite',
+              }}
+            />
           </button>
 
-          {/* Secondary Button */}
+          {/* Secondary Button - Go to Site */}
           <button
-            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl transition-all duration-300 active:scale-95 backdrop-blur-md"
+            onClick={handleGoToSite}
+            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl transition-all duration-300 active:scale-95 backdrop-blur-md relative overflow-hidden group"
             style={{
               backgroundColor: 'rgba(212, 175, 55, 0.08)',
               color: '#d4af37',
@@ -357,12 +444,22 @@ export default function Home() {
               target.style.transform = 'scale(1) translateY(0)';
             }}
           >
-            🌐 ПЕРЕЙТИ НА САЙТ
+            <span style={{ position: 'relative', zIndex: 2 }}>
+              🌐 ПЕРЕЙТИ НА САЙТ
+            </span>
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent)',
+                animation: 'shimmer 2s ease-in-out infinite',
+              }}
+            />
           </button>
 
           {/* Share Button */}
           <button
-            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 backdrop-blur-md"
+            onClick={handleShare}
+            className="w-full py-4 px-6 text-base font-semibold font-body tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 backdrop-blur-md relative overflow-hidden group"
             style={{
               backgroundColor: 'rgba(45, 155, 109, 0.08)',
               color: '#2d9b6d',
@@ -384,9 +481,56 @@ export default function Home() {
               target.style.transform = 'scale(1) translateY(0)';
             }}
           >
-            <Share2 size={18} style={{ filter: 'drop-shadow(0 0 8px rgba(45, 155, 109, 0.7))' }} />
-            ПОДЕЛИТЬСЯ
+            <Share2 size={18} style={{ filter: 'drop-shadow(0 0 8px rgba(45, 155, 109, 0.7))', position: 'relative', zIndex: 2 }} />
+            <span style={{ position: 'relative', zIndex: 2 }}>ПОДЕЛИТЬСЯ</span>
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(45, 155, 109, 0.2), transparent)',
+                animation: 'shimmer 2s ease-in-out infinite',
+              }}
+            />
           </button>
+        </div>
+
+        {/* Certificate Amount Links */}
+        <div className="mt-8 w-full">
+          <p className="text-center text-xs font-body tracking-widest mb-4" style={{ color: '#f5f1e8', opacity: 0.6 }}>
+            ВЫБЕРИТЕ СУММУ:
+          </p>
+          <div className="grid grid-cols-5 gap-2 w-full">
+            {Object.entries(CERTIFICATE_AMOUNTS).map(([key, value]) => (
+              <a
+                key={key}
+                href={value.path}
+                className="py-2 px-2 text-xs font-body font-semibold rounded-lg transition-all duration-300 text-center"
+                style={{
+                  backgroundColor: certificateAmount === value.amount ? 'rgba(212, 175, 55, 0.3)' : 'rgba(212, 175, 55, 0.08)',
+                  color: '#d4af37',
+                  border: certificateAmount === value.amount ? '1px solid rgba(212, 175, 55, 0.6)' : '1px solid rgba(212, 175, 55, 0.3)',
+                  boxShadow: certificateAmount === value.amount ? '0 0 12px rgba(212, 175, 55, 0.3)' : 'none',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                }}
+                onMouseEnter={(e) => {
+                  const target = e.currentTarget as HTMLElement;
+                  target.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
+                  target.style.boxShadow = '0 0 16px rgba(212, 175, 55, 0.4)';
+                  target.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.currentTarget as HTMLElement;
+                  if (certificateAmount !== value.amount) {
+                    target.style.backgroundColor = 'rgba(212, 175, 55, 0.08)';
+                    target.style.boxShadow = 'none';
+                  }
+                  target.style.transform = 'scale(1)';
+                }}
+              >
+                {value.amount}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -475,6 +619,24 @@ export default function Home() {
           }
         }
 
+        @keyframes shimmer {
+          0% {
+            background-position: -1000px 0;
+          }
+          100% {
+            background-position: 1000px 0;
+          }
+        }
+
+        @keyframes glow-pulse {
+          0%, 100% {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+          }
+          50% {
+            text-shadow: 0 0 40px rgba(212, 175, 55, 0.8);
+          }
+        }
+
         /* Prevent scroll */
         * {
           -webkit-user-select: none;
@@ -505,6 +667,10 @@ export default function Home() {
 
         button:focus {
           outline: none;
+        }
+
+        a {
+          text-decoration: none;
         }
 
         /* Mobile optimizations */
