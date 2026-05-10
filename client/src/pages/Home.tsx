@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 
 /**
  * Luxury Certificate Landing Page - Mobile Optimized
- * Design: Modern Luxury with Glassmorphism + iOS Animations
+ * Design: Modern Luxury with Glassmorphism + iOS Animations + Ray Effects
  * 
  * Features:
  * - 2-second intro animation with loading text
@@ -12,7 +12,9 @@ import { useLocation } from "wouter";
  * - Transparent glowing icons with shimmer effects
  * - Working links and share functionality
  * - Dynamic certificate amounts (1000₽, 2000₽, 3000₽, 4000₽, 5000₽)
- * - Separate URLs for each amount
+ * - Separate URLs for each amount (no visible selector)
+ * - Smooth ray light effects
+ * - Meliorator House background
  */
 
 interface EmojiConfetti {
@@ -33,6 +35,12 @@ interface GlowingIcon {
   delay: number;
 }
 
+interface RayEffect {
+  id: string;
+  angle: number;
+  delay: number;
+}
+
 const CERTIFICATE_AMOUNTS = {
   "1000": { amount: "1000₽", path: "/cert/1000" },
   "2000": { amount: "2000₽", path: "/cert/2000" },
@@ -46,6 +54,7 @@ export default function Home() {
   const [emojiConfetti, setEmojiConfetti] = useState<EmojiConfetti[]>([]);
   const [isActivated, setIsActivated] = useState(false);
   const [glowingIcons, setGlowingIcons] = useState<GlowingIcon[]>([]);
+  const [rayEffects, setRayEffects] = useState<RayEffect[]>([]);
   const [location] = useLocation();
   const [certificateAmount, setCertificateAmount] = useState("2000₽");
 
@@ -96,6 +105,16 @@ export default function Home() {
     setGlowingIcons(icons);
   }, []);
 
+  // Generate ray effects
+  useEffect(() => {
+    const rays: RayEffect[] = Array.from({ length: 6 }, (_, i) => ({
+      id: `ray-${i}`,
+      angle: (i * 60),
+      delay: Math.random() * 2,
+    }));
+    setRayEffects(rays);
+  }, []);
+
   const handleActivate = () => {
     // Open Telegram link
     window.open("https://t.me/meliorator_House163", "_blank");
@@ -140,33 +159,62 @@ export default function Home() {
 
   return (
     <div className="w-screen h-screen overflow-hidden fixed inset-0 flex items-center justify-center">
-      {/* Background with gradient and pattern */}
+      {/* Background with Meliorator House image */}
       <div 
         className="absolute inset-0 -z-10"
         style={{
-          backgroundImage: `url('https://d2xsxph8kpxj0f.cloudfront.net/310519663513334830/Zd4fQswhgtYQ8xXhTb4EZz/luxury-gradient-bg-2j8mSveZ4wku2BaC7uekmR.webp')`,
+          backgroundImage: `url('/manus-storage/2778C516-1536-458D-B0D2-F15DE4041E6B_11694992.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
         }}
       />
 
-      {/* Animated pattern overlay */}
+      {/* Dark overlay for better readability */}
       <div 
-        className="absolute inset-0 -z-10 opacity-20"
+        className="absolute inset-0 -z-10"
         style={{
-          backgroundImage: `url('https://d2xsxph8kpxj0f.cloudfront.net/310519663513334830/Zd4fQswhgtYQ8xXhTb4EZz/abstract-luxury-pattern-oPCJkyoEa7zdUiZjd9ehD7.webp')`,
-          backgroundSize: '400px 400px',
-          backgroundPosition: 'center',
-          animation: 'float 20s ease-in-out infinite',
+          background: 'rgba(0, 0, 0, 0.4)',
         }}
       />
 
+      {/* Ray Light Effects */}
+      <div className="absolute inset-0 -z-9 pointer-events-none overflow-hidden">
+        {rayEffects.map((ray) => (
+          <div
+            key={ray.id}
+            className="absolute"
+            style={{
+              width: '200%',
+              height: '200%',
+              left: '50%',
+              top: '50%',
+              transform: `translate(-50%, -50%) rotate(${ray.angle}deg)`,
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                left: '0',
+                top: '50%',
+                width: '100%',
+                height: '80px',
+                background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.15), transparent)',
+                filter: 'blur(30px)',
+                animation: `ray-sweep 8s ease-in-out infinite`,
+                animationDelay: `${ray.delay}s`,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
       {/* Shimmer overlay effect */}
       <div 
-        className="absolute inset-0 -z-9 pointer-events-none"
+        className="absolute inset-0 -z-8 pointer-events-none"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.08), transparent)',
           animation: 'shimmer 3s ease-in-out infinite',
         }}
       />
@@ -492,46 +540,6 @@ export default function Home() {
             />
           </button>
         </div>
-
-        {/* Certificate Amount Links */}
-        <div className="mt-8 w-full">
-          <p className="text-center text-xs font-body tracking-widest mb-4" style={{ color: '#f5f1e8', opacity: 0.6 }}>
-            ВЫБЕРИТЕ СУММУ:
-          </p>
-          <div className="grid grid-cols-5 gap-2 w-full">
-            {Object.entries(CERTIFICATE_AMOUNTS).map(([key, value]) => (
-              <a
-                key={key}
-                href={value.path}
-                className="py-2 px-2 text-xs font-body font-semibold rounded-lg transition-all duration-300 text-center"
-                style={{
-                  backgroundColor: certificateAmount === value.amount ? 'rgba(212, 175, 55, 0.3)' : 'rgba(212, 175, 55, 0.08)',
-                  color: '#d4af37',
-                  border: certificateAmount === value.amount ? '1px solid rgba(212, 175, 55, 0.6)' : '1px solid rgba(212, 175, 55, 0.3)',
-                  boxShadow: certificateAmount === value.amount ? '0 0 12px rgba(212, 175, 55, 0.3)' : 'none',
-                  cursor: 'pointer',
-                  backdropFilter: 'blur(10px)',
-                }}
-                onMouseEnter={(e) => {
-                  const target = e.currentTarget as HTMLElement;
-                  target.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
-                  target.style.boxShadow = '0 0 16px rgba(212, 175, 55, 0.4)';
-                  target.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  const target = e.currentTarget as HTMLElement;
-                  if (certificateAmount !== value.amount) {
-                    target.style.backgroundColor = 'rgba(212, 175, 55, 0.08)';
-                    target.style.boxShadow = 'none';
-                  }
-                  target.style.transform = 'scale(1)';
-                }}
-              >
-                {value.amount}
-              </a>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* CSS Animations */}
@@ -634,6 +642,23 @@ export default function Home() {
           }
           50% {
             text-shadow: 0 0 40px rgba(212, 175, 55, 0.8);
+          }
+        }
+
+        @keyframes ray-sweep {
+          0% {
+            opacity: 0;
+            transform: scaleY(0);
+          }
+          25% {
+            opacity: 1;
+          }
+          75% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: scaleY(1);
           }
         }
 
