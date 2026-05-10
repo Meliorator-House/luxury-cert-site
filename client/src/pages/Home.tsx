@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
  * - Separate URLs for each amount (no visible selector)
  * - Smooth ray light effects
  * - Meliorator House background
+ * - Night cricket ambient sound (10% volume)
  */
 
 interface EmojiConfetti {
@@ -76,6 +77,27 @@ export default function Home() {
       generateEmojiConfetti();
     }, 2000);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Cricket sound effect - auto play on load
+  useEffect(() => {
+    const audio = new Audio('/manus-storage/crickets_640d8ea3.wav');
+    audio.volume = 0.1; // 10% volume
+    audio.loop = true;
+    audio.play().catch(err => {
+      console.log('Audio autoplay prevented by browser:', err);
+      // Add click listener to play on user interaction
+      const playOnClick = () => {
+        audio.play();
+        document.removeEventListener('click', playOnClick);
+      };
+      document.addEventListener('click', playOnClick);
+    });
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
   }, []);
 
   // Generate iOS-style emoji confetti
@@ -158,7 +180,7 @@ export default function Home() {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden fixed inset-0 flex items-center justify-center">
+    <div className="w-screen h-screen overflow-hidden fixed inset-0 flex items-center justify-center" data-cricket-ambient="true">
       {/* Background with Meliorator House image */}
       <div 
         className="absolute inset-0 -z-10"
@@ -237,6 +259,14 @@ export default function Home() {
           </div>
         ))}
       </div>
+
+      {/* Hidden audio element for cricket sounds */}
+      <audio
+        id="cricket-audio"
+        preload="auto"
+        loop
+        style={{ display: 'none' }}
+      />
 
       {/* Intro Screen */}
       {showIntro && (
